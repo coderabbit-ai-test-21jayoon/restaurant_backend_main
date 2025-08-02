@@ -7,19 +7,17 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Set up Java
       uses: actions/setup-java@v3
-
       with:
-          distribution: 'temurin'
-          java-version: '17'
+        distribution: 'temurin'
+        java-version: '17'
 
     - name: Grant execute permission to gradlew
       run: chmod +x ./gradlew
@@ -28,10 +26,13 @@ jobs:
       run: |
         mkdir -p src/main/resources
         echo "${{ secrets.APPLICATION_DEV_YML }}" | base64 --decode > src/main/resources/application.yml
-        find src
+        cat src/main/resources/application.yml || echo "YML not found"
 
     - name: Build with Gradle
       run: ./gradlew build -x test --no-daemon
+
+    - name: List build/libs content
+      run: ls -lh build/libs || echo "JAR not found"
 
     - name: Log in to DockerHub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
